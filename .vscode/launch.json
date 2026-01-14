@@ -1,0 +1,15 @@
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File", // 配置名称，显示在调试下拉菜单中
+            "type": "debugpy",              // 调试器类型
+            "request": "launch",           // 请求类型，"launch" 表示启动新程序，"attach" 表示附加到现有进程
+            "program": "${file}",          // 要调试的程序入口文件，${file} 代表当前打开的文件
+            "console": "integratedTerminal", // 在哪里运行程序，integratedTerminal 是 VS Code 内置终端
+            "justMyCode": true,            // 是否仅调试用户代码，跳过库代码
+            "cwd": "${workspaceFolder}"    // 工作目录，${workspaceFolder} 代表当前工作区根目录
+        }
+    ]
+}
