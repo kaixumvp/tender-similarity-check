@@ -365,7 +365,35 @@ def test_overlapping_splitting():
 国政府采购法实施条例》《政府采购非招标采购方式管理办法》（财政部令第74号）及相关法律法规。
 38.2政府采购合同的履行、违约责任和解决争议的方法等适用《中华人民共'''
     print(f"text文本长度：{len(text)}")
-    chunks = overlapping_splitting(text, 70000)   #100个字符拆分一个片段，重叠25个字符拆分
+    chunks = overlapping_splitting(text, 150)   #100个字符拆分一个片段，重叠25个字符拆分
     for chunk in chunks:
-        print(f"片段：{chunk}; 字符长度：{len(chunk)}")
-        get_embedding(chunk)
+        print(f"片段-----------------------------------：{chunk}; 字符长度-----------------------------：{len(chunk)}")
+        #get_embedding(chunk)
+
+
+def splitting_a():
+    #from langchain.document_loaders import PyPDFLoader
+    #from langchain.text_splitter import RecursiveCharacterTextSplitter
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+    from langchain_community.document_loaders import PyPDFLoader
+
+    # Use the PyPDFLoader to load and parse the PDF
+    loader = PyPDFLoader("D:/pyproject/tender-similarity-check/document/南沙区2026-2027年市政道路绿化养护项目招标文件（2026011103）.pdf")
+    pages = loader.load_and_split()
+    print(f'Loaded {len(pages)} pages from the PDF')
+
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size = 200,
+        chunk_overlap  = 10,
+        length_function = len,
+        add_start_index = True,
+    )
+
+    texts = text_splitter.split_documents(pages)
+    print(f'Split the pages in {len(texts)} chunks')
+    for text in texts:
+        print(f"{text}\n")
+
+def test_splitting_a():
+    splitting_a()
+
