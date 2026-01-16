@@ -1,6 +1,9 @@
 import re
-from apps.document_parser.base_parser import BaseParser
+
 import fitz
+
+from apps.document_parser.base import HFiledocument
+from apps.document_parser.base_parser import BaseParser
 
 
 class PdfParser(BaseParser):
@@ -52,8 +55,9 @@ class PdfParser(BaseParser):
         has_keyword = any(keyword in text_stripped for keyword in self.header_footer_keywords)
         
         return has_page_num or has_keyword
+    
 
-    def parse(self, file) -> str:
+    def parse(self, file, file_id) -> HFiledocument:
         """
         文档解析器功能，将文件中的内容转化为可读字符串
         
@@ -63,6 +67,8 @@ class PdfParser(BaseParser):
         """ 
         try:
             doc = fitz.open(file)
+            filedocument = None
+            top = None
             full_clean_text = ""
             for page_num, page in enumerate(doc):
                 # 按文本块提取（保留位置信息）
@@ -79,11 +85,19 @@ class PdfParser(BaseParser):
 
                 # 清理当前页空行，避免冗余
                 page_clean_text = re.sub(r'\n+', '\n', page_clean_text).strip()
-                full_clean_text += page_clean_text + "\n\n"
+                if filedocument:
+                    current = HFiledocument(file_id, page_num, page_clean_text)
+                    current_parent = filedocument
+                    current_parent.next = current
+                    filedocument = current
+                else:
+                    filedocument = HFiledocument(file_id, page_num, page_clean_text)
+                    top = filedocument
+                #full_clean_text += page_clean_text + "\n\n"
 
             # 最终清理：移除多余空行，返回纯文本
-            full_clean_text = re.sub(r'\n{3,}', '\n\n', full_clean_text).strip()
-            return full_clean_text
+            #full_clean_text = re.sub(r'\n{3,}', '\n\n', full_clean_text).strip()
+            return top
 
         except Exception as e:
             raise ValueError(f"标书PDF解析失败：{str(e)}")
