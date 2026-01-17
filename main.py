@@ -92,48 +92,5 @@ class BidDocumentChecker:
 
 # ------------------- 测试示例 -------------------
 if __name__ == "__main__":
-    # 初始化查重工具
-    # checker = BidDocumentChecker()
-    
-    # # 模拟两份标书文本
-    # bid_text1 = """
-    # 本公司具备承览大型工程的资质和能力，拥有多年轻松验的项目经验，
-    # 能够按照甲方要求按质按量完成工程建设，工期保证在180天以内，
-    # 报价为人民币880万元整。
-    # """
-    
-    # bid_text2 = """
-    # 我司具备承揽大型工程的资质和能力，拥有多年经验的项目经验，
-    # 能够按照甲方要求按质按量完成工程建设，工期保证在180天之内，
-    # 报价为人民币880万元整。
-    # """
-    
-    # # 执行查重和纠错
-    # result = checker.calculate_similarity(bid_text1, bid_text2)
-    
-    # # 输出结果
-    # print("===== 标书查重&纠错报告 =====")
-    # print(f"重复率：{result['重复率']}%")
-    # print("\n--- 文本1纠错详情 ---")
-    # if result['文本1纠错详情']:
-    #     for item in result['文本1纠错详情']:
-    #         print(f"原词：{item['原词']} → 纠错后：{item['纠错后']}（位置：{item['位置']}）")
-    # else:
-    #     print("无错别字")
-    
-    # print("\n--- 文本2纠错详情 ---")
-    # if result['文本2纠错详情']:
-    #     for item in result['文本2纠错详情']:
-    #         print(f"原词：{item['原词']} → 纠错后：{item['纠错后']}（位置：{item['位置']}）")
-    # else:
-    #     print("无错别字")
-    
-    # print("\n--- 高重复特征词 ---")
-    # print(result['高重复特征词'])
-    file_path = "D:/pyproject/tender-similarity-check/document/南沙区2026-2027年市政道路绿化养护项目招标文件（2026011103）.pdf"
-    pdf_parser = PdfParser()
-    filedocument = pdf_parser.parse(file_path, "2026011103")
-    for page in filedocument:
-        print(f"文件页内容：{page.page_content}", f"文件页码：{page.page}")
-    pdf_parser.overlapping_splitting(filedocument)
+   pass
 

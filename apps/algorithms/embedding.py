@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 
 import jieba
 import numpy as np
+import requests
 
 
 class BaseVectorizer(metaclass=abc.ABCMeta):
@@ -108,7 +109,7 @@ class QwenEmbeddingVectorizer(BaseVectorizer):
     def get_vector_dim(self) -> int:
         return 4096  # 通义千问向量维度
 
-    def encode(self, texts: Union[str, List[str]]) -> np.ndarray:
+    def encode(self, texts: Union[str, List[str]]) -> list[float]:
         # 调用通义千问API生成向量...
         """
         获取文本的向量表示。使用 Qwen3-Embedding。
@@ -127,3 +128,46 @@ class QwenEmbeddingVectorizer(BaseVectorizer):
         )
         print(response.data[0].embedding)
         return response.data[0].embedding
+
+class OllamaQwenEmbeddingVectorizer(BaseVectorizer):
+    def get_vector_dim(self) -> int:
+        return 4096  # 通义千问向量维度
+
+    def encode(
+        self,
+        texts: Union[str, List[str]]
+    ) -> list[float]:
+        """
+        生成文本向量
+        :param texts: 单个文本/文本列表
+        :param normalize: 是否归一化向量
+        :return: 向量数组（shape：单文本→(1,1536)，批量→(n,1536)）
+        """
+        # 统一转为列表
+        # if isinstance(texts, str):
+        #     texts = [texts]
+        
+        # 构造API请求参数
+        payload = {
+            "model": "dengcao/Qwen3-Embedding-0.6B:F16",
+            "prompt": texts
+        }
+
+        try:
+            # 发送POST请求
+            response = requests.post(
+                "http://localhost:11434/api/embeddings",
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=30  # 批量请求延长超时
+            )
+            response.raise_for_status()  # 抛出HTTP错误
+            result = response.json()
+
+            # 提取向量
+            embeddings = [item["embedding"] for item in result["embeddings"]]
+            return embeddings
+        except requests.exceptions.RequestException as e:
+            raise ValueError(f"API调用失败：{str(e)}")
+        except KeyError as e:
+            raise ValueError(f"响应解析失败：缺失字段{e}")

@@ -11,6 +11,51 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "pytest: 单个测试文件",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",  // 直接调用pytest模块
+            "args": [
+                "${file}",  // 调试当前打开的测试文件
+                "-v",       // 显示详细测试日志
+                "-s"        // 允许打印print输出（调试时关键）
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {"PYTHONPATH": "${workspaceFolder}"},  // 解决模块导入问题
+            "python": "${workspaceFolder}/venv/bin/python"  // 替换为你的虚拟环境Python路径（Windows：venv\\Scripts\\python.exe）
+        },
+        {
+            "name": "pytest: 所有测试用例",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/",  // 测试目录（按需修改）
+                "-v",
+                "-s"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {"PYTHONPATH": "${workspaceFolder}"},
+            "python": "${workspaceFolder}/venv/bin/python"
+        },
+        {
+            "name": "pytest: test_pdf_parser",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "${file}::test_pdf_parser",  // 格式：文件::函数名
+                "-v",
+                "-s"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {"PYTHONPATH": "${workspaceFolder}"},
+            "python": "${workspaceFolder}/venv/bin/python"
         }
     ]
 }

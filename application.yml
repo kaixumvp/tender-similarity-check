@@ -1,4 +1,4 @@
-milnus:
+milvus:
   host: 127.0.0.1
   port: 19530
   collection_name: tender_vector_collection

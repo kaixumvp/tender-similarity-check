@@ -1,3 +1,4 @@
+from typing import List
 from pymilvus import (
     connections,
     Collection,
@@ -7,6 +8,9 @@ from pymilvus import (
     utility
 )
 from sentence_transformers import SentenceTransformer
+
+from apps.algorithms.embedding import OllamaQwenEmbeddingVectorizer, QwenEmbeddingVectorizer
+from apps.document_parser.base import HDocument
 
 # ------------------- 1. 初始化配置 -------------------
 # Milvus 连接配置
@@ -27,42 +31,27 @@ def text_to_vector(texts):
 class MilvusVectorDB:
     def __init__(self, config, fields, collection_name):
         # 连接Milvus服务
+        host = config["host"]
+        port = config["port"]
         connections.connect(
             alias="default",
-            host=MILVUS_HOST,
-            port=MILVUS_PORT
+            host=host,
+            port=port
         )
         self.fields = fields
         self.collection_name = collection_name
-        #self.collection = self._create_collection()
     
-    def get_collection(self, collection_name):
-        if utility.has_collection(collection_name):
-            return Collection(name=collection_name)
+    def get_collection(self) -> Collection:
+        if utility.has_collection(self.collection_name):
+            return Collection(name=self.collection_name)
         else:
+            self.collection = self._create_collection()
+            
             return self._create_collection()
 
     def _create_collection(self):
         """创建Milvus集合（表）"""
-        # 定义字段：主键ID + 文本内容 + 向量字段
-        # fields = [
-        #     FieldSchema(
-        #         name="id",
-        #         dtype=DataType.INT64,
-        #         is_primary=True,
-        #         auto_id=True  # 自动生成ID
-        #     ),
-        #     FieldSchema(
-        #         name="text_content",
-        #         dtype=DataType.VARCHAR,
-        #         max_length=4000  # 文本最大长度
-        #     ),
-        #     FieldSchema(
-        #         name="text_vector",
-        #         dtype=DataType.FLOAT_VECTOR,
-        #         dim=VECTOR_DIM  # 向量维度需与模型输出一致
-        #     )
-        # ]
+        
         # 定义集合Schema
         schema = CollectionSchema(self.fields, description="标书文本向量集合")
         collection = Collection(name=COLLECTION_NAME, schema=schema)
@@ -80,17 +69,37 @@ class MilvusVectorDB:
         """
         self.get_collection(self.collection_name).create_index(field_name=field_name, index_params=index_params)
 
-    def insert_data(self, texts):
+    def insert_data(self, documents: list[HDocument]):
         """插入文本数据（存储）"""
         # 文本转向量
-        vectors = text_to_vector(texts)
-        # 构造插入数据
-        data = [
-            texts,  # text_content字段
-            vectors  # text_vector字段
-        ]
+        #vectorizer = QwenEmbeddingVectorizer()
+        vectorizer = OllamaQwenEmbeddingVectorizer()
+         # 构造插入数据
+        data = []
+        vec_list = []
+        file_ids = []
+        pages = []
+        start_indexes = []
+        texts = []
+        for document in documents:
+            print(f"文件页数：{str(document.page)}，开始位置：{document.start_index}", f"文本内容：{document.text}")
+            vectors = vectorizer.encode(document.text)
+            print(f"向量数据: {vectors}")
+            vec_list.append(vectors)
+            file_ids.append(document.file_id)
+            pages.append(document.page)
+            start_indexes.append(document.start_index)
+            texts.append(document.text)
+            # data.append({
+            #     vec_list,  # vector字段
+            #     document.file_id,  # file_id字段
+            #     document.page, #page字段
+            #     document.start_index, #开始位置
+            #     document.text #文本内容
+            # })
+       
         # 插入Milvus
-        insert_result = self.collection.insert(data)
+        insert_result = self.get_collection.insert([vec_list, file_ids, pages, start_indexes, texts])
         self.collection.flush()  # 刷盘，确保数据持久化
         print(f"插入成功，插入ID：{insert_result.primary_keys}")
         print(f"集合总数据量：{self.collection.num_entities}")
