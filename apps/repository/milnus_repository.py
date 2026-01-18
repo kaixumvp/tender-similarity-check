@@ -99,7 +99,7 @@ class MilvusVectorDB:
             # })
        
         # 插入Milvus
-        insert_result = self.get_collection.insert([vec_list, file_ids, pages, start_indexes, texts])
+        insert_result = self.get_collection().insert([vec_list, file_ids, pages, start_indexes, texts])
         self.collection.flush()  # 刷盘，确保数据持久化
         print(f"插入成功，插入ID：{insert_result.primary_keys}")
         print(f"集合总数据量：{self.collection.num_entities}")

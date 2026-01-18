@@ -149,7 +149,7 @@ class OllamaQwenEmbeddingVectorizer(BaseVectorizer):
         
         # 构造API请求参数
         payload = {
-            "model": "dengcao/Qwen3-Embedding-0.6B:F16",
+            "model": "qwen3-Embedding:0.6b",
             "prompt": texts
         }
 
@@ -165,8 +165,8 @@ class OllamaQwenEmbeddingVectorizer(BaseVectorizer):
             result = response.json()
 
             # 提取向量
-            embeddings = [item["embedding"] for item in result["embeddings"]]
-            return embeddings
+            #embeddings = [item["embedding"] for item in result["embeddings"]]
+            return result["embedding"]
         except requests.exceptions.RequestException as e:
             raise ValueError(f"API调用失败：{str(e)}")
         except KeyError as e:
