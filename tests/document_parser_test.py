@@ -6,12 +6,12 @@ from apps.splitting import overlapping_splitting
 
 
 def test_pdf_parser():
-    file_path = "D:/pyproject/tender-similarity-check/document/南沙区2026-2027年市政道路绿化养护项目招标文件（2026011103）.pdf"
+    file_path = "D:/pyproject/tender-similarity-check/document/万达影院映前广告宣传单一来源采购文件（[230001]HLJZHY[DY]2026000120260105001）.pdf"
     pdf_parser = PdfParser()
-    filedocument = pdf_parser.parse(file_path, "2026011103")
+    filedocument = pdf_parser.parse(file_path, "2026011104")
     print("---------------------------------------------------")
     documents:list[HDocument] = pdf_parser.overlapping_splitting(filedocument, 5000, 100)
-    milvus_vector_db = create_tender_vector_milnus_db(4096)
+    milvus_vector_db = create_tender_vector_milnus_db(1024)
     milvus_vector_db.insert_data(documents)
     #for document in documents:
         #print("单个page的类型：", type(document))
@@ -22,9 +22,18 @@ def test_pdf_parser():
         #collection.insert()
         #print(f"文件页数：{str(document.page)}，开始位置：{document.start_index}", f"文本内容：{document.text}")
 
+def test_query_milnvs_data():
+    milvus_vector_db = create_tender_vector_milnus_db(1024)
+    milnvs_data_03 = milvus_vector_db.query_data("file_id == '2026011103'", ["file_id", "page", "start_index", "text_content", "vector"])
+    #print(milnvs_data_03)
+    for item in milnvs_data_03:
+        result = milvus_vector_db.search_similar("file_id == '2026011104'", [item['vector']])
+        for info in result:
+            if info["similarity"] > 0.9:
+                print(f"源文本：{item['text_content']}，对比文本:{info}")
 
 def test_text_splite():
-    file_path = "D:/pyproject/tender-similarity-check/document/南沙区2026-2027年市政道路绿化养护项目招标文件（2026011103）.pdf"
+    file_path = "D:/pyproject/tender-similarity-check/document/万达影院映前广告宣传单一来源采购文件（[230001]HLJZHY[DY]2026000120260105001）.pdf"
     pdf_parser = PdfParser()
     pdf_test = pdf_parser.parse(file_path)
     chunks = overlapping_splitting(pdf_test, 2000)   #100个字符拆分一个片段，重叠25个字符拆分

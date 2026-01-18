@@ -19,7 +19,7 @@ def create_tender_vector_milnus_db(vector_dim) -> MilvusVectorDB:
         ),
         FieldSchema(
             name="page",
-            dtype=DataType.INT8
+            dtype=DataType.INT16
         ),
         FieldSchema(
             name="start_index",
@@ -28,7 +28,7 @@ def create_tender_vector_milnus_db(vector_dim) -> MilvusVectorDB:
         FieldSchema(
             name="text_content",
             dtype=DataType.VARCHAR,
-            max_length=5500  # 文本最大长度
+            max_length=8000  # 文本最大长度
         ),
         FieldSchema(
             name="vector",

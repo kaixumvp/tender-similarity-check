@@ -30,4 +30,4 @@ class HDocument:
         self.file_id = file_id
         self.page = page
         self.start_index = start_index
-        self.text = text
+        self.text:str = text
