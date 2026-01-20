@@ -13,11 +13,6 @@ from apps.algorithms.embedding import OllamaQwenEmbeddingVectorizer, QwenEmbeddi
 from apps.document_parser.base import HDocument
 
 # ------------------- 1. 初始化配置 -------------------
-# Milvus 连接配置
-MILVUS_HOST = "localhost"
-MILVUS_PORT = "19530"
-COLLECTION_NAME = "tender_vector_collection"  # 标书向量集合名
-VECTOR_DIM = 384  # Sentence-BERT生成的向量维度
 TOP_K = 3  # 查询返回Top3相似结果
 
 # ------------------- 2. 工具函数：文本转向量 -------------------

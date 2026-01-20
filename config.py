@@ -103,5 +103,6 @@ def validate_vector_config(config: Dict) -> bool:
 yaml_handler = YamlHandler(encoding="utf-8")
 config_data = yaml_handler.read_yaml("application.yml")
 milvus_config = config_data["milvus"]
+minio_config = config_data["minio"]
 
-__all__ = ["config_data", "milvus_config"]
+__all__ = ["config_data", "milvus_config", "minio_config"]
