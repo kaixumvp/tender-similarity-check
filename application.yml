@@ -11,3 +11,7 @@ minio:
   access_key: minioadmin
   secret_key: minioadmin
   bucket_name: tender
+
+mysql:
+  database_url: mysql+pymysql://root:123456@127.0.0.1:3306/tender_check?charset=utf8mb4
+  pool_recycle: 300

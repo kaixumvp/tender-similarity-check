@@ -1,26 +1,22 @@
+from itertools import combinations
 from typing import List
 
 from fastapi import BackgroundTasks
-from itertools import combinations
 
-from apps.repository.dependencies import get_minio_client
-from config import minio_config
+from apps import AppContext
+from apps.repository.entity.file_entity import FileRecordEntity
 
+app_context = AppContext()
 
 def create_plagiarism_check_tasks(file_ids) -> List:
     """
     创建标书查重任务
     :param file_ids: 标书文件集合，标书文件id
     """
-    minio_client = get_minio_client()
-    for file_id in file_ids:
-        minio_client.get_object(
-            bucket_name=minio_config["bucket_name"],
-            object_name=f"files/{file_id}" )
-
-    for file_id_1, file_id_2 in combinations(file_ids, 2):
-        pass
-    return []
+    # 根据文件id获取文件管理表中获取对象的信息数据，如文件的类型，文件路径file_path
+    with app_context.db_session_factory() as session:
+         file_record_list = session.query(FileRecordEntity).filter_by(FileRecordEntity.id.in_(file_ids)).all()
+    return list(combinations(file_record_list, 2))
 
 
 def start_plagiarism_check(tasks, background_tasks: BackgroundTasks):
@@ -40,8 +36,10 @@ def plagiarism_check_tasks(task):
     任务执行
     :param task: 任务数据，并非任务本身，实体数据
     """
+    file_record_a, file_record_b = task
+    minio_client = app_context.minio_client
+    # 查询文件内容
 
-    return None
 
 def bid_plagiarism_check(file_ids: List[str], background_tasks: BackgroundTasks):
     """

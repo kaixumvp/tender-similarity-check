@@ -1,18 +1,14 @@
 # app/main.py
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from apps.repository.minio_repository import ensure_bucket_exists
-from apps.web.api import file_api
 
 import uvicorn
+from fastapi import FastAPI
 
-from config import minio_config
-
-
+from apps import AppContext
 
 @asynccontextmanager
-async def start_app(app: FastAPI):
-    ensure_bucket_exists(minio_config["bucket_name"])
+async def start_app(app_context: FastAPI):
+    AppContext.start(app_context)
     yield
 
 app = FastAPI(
@@ -22,7 +18,6 @@ app = FastAPI(
 )
 
 # 注册子路由（自动带全局前缀）
-app.include_router(file_api.router)
 
 if __name__ == "__main__":
     """启动 FastAPI 应用"""

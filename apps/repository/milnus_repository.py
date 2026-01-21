@@ -24,39 +24,36 @@ def text_to_vector(texts):
 
 # ------------------- 3. Milvus 核心操作 -------------------
 class MilvusVectorDB:
-    def __init__(self, config, fields, collection_name):
+    def __init__(self, fields, collection_name, index_field_name, index_params):
         # 连接Milvus服务
-        host = config["host"]
-        port = config["port"]
-        connections.connect(
-            alias="default",
-            host=host,
-            port=port
-        )
+
         self.fields = fields
         self.collection_name = collection_name
+        self.index_field_name = index_field_name
+        self.index_params = index_params
         self.collection = None
         self.get_collection()
     
     def get_collection(self) -> Collection:
         if utility.has_collection(self.collection_name):
-            if self.collection:
-                return self.collection
-            self.collection = Collection(name=self.collection_name)
-            return self.collection
+            if not self.collection:
+                self.collection = Collection(name=self.collection_name)
         else:
             self.collection = self._create_collection()
-            return self.collection
+        if not self.collection.has_index(self.index_field_name):
+            # 创建索引
+            self._create_index(self.index_field_name, self.index_params)
+        return self.collection
 
     def _create_collection(self):
         """创建Milvus集合（表）"""
         
         # 定义集合Schema
         schema = CollectionSchema(self.fields, description="标书文本向量集合")
-        collection = Collection(name=COLLECTION_NAME, schema=schema)
+        collection = Collection(name=self.collection_name, schema=schema)
         return collection
     
-    def create_index(self, field_name, index_params):
+    def _create_index(self, field_name, index_params):
         """
         创建索引
         # 创建向量索引（必须创建索引才能高效查询）
@@ -90,13 +87,6 @@ class MilvusVectorDB:
                 pages.append(document.page)
                 start_indexes.append(document.start_index)
                 texts.append(document.text)
-                # data.append({
-                #     vec_list,  # vector字段
-                #     document.file_id,  # file_id字段
-                #     document.page, #page字段
-                #     document.start_index, #开始位置
-                #     document.text #文本内容
-                # })
        
         # 插入Milvus
         insert_result = self.get_collection().insert([file_ids, pages, start_indexes, texts, vec_list])
@@ -112,14 +102,11 @@ class MilvusVectorDB:
 
     def search_similar(self, expr, query_vector):
         """相似性查询"""
-        # 1. 查询文本转向量
-       # query_vector = text_to_vector([query_text])
         # 2. 加载集合到内存（查询前必须加载）
         self.collection.load()
         # 3. 定义查询参数
         search_params = {
             "metric_type":"COSINE",
-            
             "params": {"nprobe": 128, "similarity":0.85}  # 查询参数，nprobe越大越准但速度越慢
         }
         # 4. 执行查询
@@ -142,28 +129,3 @@ class MilvusVectorDB:
                 })
         return search_results
 
-# ------------------- 4. 测试：存储+查询 -------------------
-if __name__ == "__main__":
-    # 初始化Milvus客户端
-    milvus_db = MilvusVectorDB()
-
-    # 示例标书文本（模拟你之前处理的招标文件内容）
-    tender_texts = [
-        "南沙区2026-2027年市政道路绿化养护项目，养护范围包含10条主干道，预算500万元",
-        "2026年南沙区绿化养护项目要求：每月修剪绿植2次，雨季增加巡检频次，质保期1年",
-        "市政道路绿化养护招标文件：投标人需具备城市园林绿化一级资质，近3年有同类项目业绩",
-        "南沙区绿化养护项目评标标准：技术分60分，商务分40分，价格分采用低价优先法"
-    ]
-
-    # 步骤1：存储（插入）标书文本向量
-    milvus_db.insert_data(tender_texts)
-
-    # 步骤2：查询相似文本
-    query_text = "南沙区绿化养护项目 预算 资质要求"
-    similar_results = milvus_db.search_similar(query_text)
-
-    # 打印查询结果
-    print("\n=== 相似文本查询结果 ===")
-    for i, res in enumerate(similar_results, 1):
-        print(f"\n排名{i}（相似度：{res['similarity']:.4f}）：")
-        print(f"文本：{res['text']}")

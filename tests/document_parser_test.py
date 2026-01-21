@@ -1,7 +1,6 @@
-from apps.algorithms.embedding import QwenEmbeddingVectorizer
 from apps.document_parser.base_parser import HDocument
 from apps.document_parser.pdf_parser import PdfParser
-from apps.service.milnus_service import create_tender_vector_milnus_db
+from apps.service.milnus_service import create_tender_vector_milvus_db
 from apps.splitting import overlapping_splitting
 
 
@@ -11,7 +10,7 @@ def test_pdf_parser():
     filedocument = pdf_parser.parse(file_path, "2026011103")
     print("---------------------------------------------------")
     documents:list[HDocument] = pdf_parser.overlapping_splitting(filedocument, 5000, 100)
-    milvus_vector_db = create_tender_vector_milnus_db(1024)
+    milvus_vector_db = create_tender_vector_milvus_db(1024)
     milvus_vector_db.insert_data(documents)
     #for document in documents:
         #print("单个page的类型：", type(document))
@@ -23,7 +22,7 @@ def test_pdf_parser():
         #print(f"文件页数：{str(document.page)}，开始位置：{document.start_index}", f"文本内容：{document.text}")
 
 def test_query_milnvs_data():
-    milvus_vector_db = create_tender_vector_milnus_db(1024)
+    milvus_vector_db = create_tender_vector_milvus_db(1024)
     milnvs_data_03 = milvus_vector_db.query_data("file_id == '2026011103'", ["file_id", "page", "start_index", "text_content", "vector"])
     #print(milnvs_data_03)
     for item in milnvs_data_03:
