@@ -4,3 +4,14 @@ milvus:
   collection_name: tender_vector_collection
   vector_dim:
   top_k: 10
+
+minio:
+  # .env
+  host: localhost:9010
+  access_key: minioadmin
+  secret_key: minioadmin
+  bucket_name: tender
+
+mysql:
+  database_url: mysql+pymysql://root:123456@127.0.0.1:3306/tender_check?charset=utf8mb4
+  pool_recycle: 300

@@ -1,6 +1,7 @@
 import re
 
 import fitz
+from pymupdf import Document
 
 from apps.document_parser.base import HFiledocument
 from apps.document_parser.base_parser import BaseParser
@@ -57,42 +58,48 @@ class PdfParser(BaseParser):
         return has_page_num or has_keyword
     
 
-    def parse(self, file, file_id) -> HFiledocument:
+    def parse(self, filename=None, stream=None, file_id = None) -> HFiledocument:
         """
         文档解析器功能，将文件中的内容转化为可读字符串
         
-        :param file: 需要解析的文件
+        :param filename: 需要解析的文件，使用路径
+        :param stream: 数据流（可选）,如果要解析的是二进制流则使用该参数
+        :param file_id: 文件在数据库表中的id
         :return: 返回解析的文本内容，字符串类型
         :rtype: str
         """ 
         try:
-            doc = fitz.open(file)
-            filedocument = None
+            doc:Document= fitz.open(filename=filename, filetype="pdf", stream=stream)
+            file_document = None
             top = None
-            full_clean_text = ""
             for page_num, page in enumerate(doc):
                 # 按文本块提取（保留位置信息）
-                text_blocks = page.get_text("blocks")
-                page_clean_text = ""
+                text = page.get_text().strip()
+                if text:
+                    text_blocks = page.get_text("blocks")
+                    page_clean_text = ""
 
-                for block in text_blocks:
-                    block_text = block[4].strip()
-                    block_bbox = fitz.Rect(block[:4])
+                    for block in text_blocks:
+                        block_text = block[4].strip()
+                        block_bbox = fitz.Rect(block[:4])
 
-                    # 过滤页眉/页脚/页码
-                    if not self._is_header_footer(page, block_text, block_bbox):
-                        page_clean_text += block_text + "\n"
+                        # 过滤页眉/页脚/页码
+                        if not self._is_header_footer(page, block_text, block_bbox):
+                            page_clean_text += block_text + "\n"
 
-                # 清理当前页空行，避免冗余
-                page_clean_text = re.sub(r'\n+', '\n', page_clean_text).strip()
-                if filedocument:
-                    current = HFiledocument(file_id, page_num, page_clean_text)
-                    current_parent = filedocument
-                    current_parent.next = current
-                    filedocument = current
+                    # 清理当前页空行，避免冗余
+                    page_clean_text = re.sub(r'\n+', '\n', page_clean_text).strip()
+                    if file_document:
+                        current = HFiledocument(file_id, page_num, page_clean_text)
+                        current_parent = file_document
+                        current_parent.next = current
+                        file_document = current
+                    else:
+                        file_document = HFiledocument(file_id, page_num, page_clean_text)
+                        top = file_document
                 else:
-                    filedocument = HFiledocument(file_id, page_num, page_clean_text)
-                    top = filedocument
+                    # 扫描件处理
+                    pass
                 #full_clean_text += page_clean_text + "\n\n"
 
             # 最终清理：移除多余空行，返回纯文本

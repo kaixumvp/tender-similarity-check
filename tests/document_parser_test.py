@@ -1,17 +1,23 @@
-from apps.algorithms.embedding import QwenEmbeddingVectorizer
+import pytest
+
+from apps import AppContext
 from apps.document_parser.base_parser import HDocument
 from apps.document_parser.pdf_parser import PdfParser
-from apps.service.milnus_service import create_tender_vector_milnus_db
+from apps.service.milnus_service import create_tender_vector_milvus_db
 from apps.splitting import overlapping_splitting
 
 
-def test_pdf_parser():
-    file_path = "D:/pyproject/tender-similarity-check/document/虚拟仿真实验教学平台招标文件（[230001]ZJXG[GK]2026000120260109001）.pdf"
+@pytest.fixture(scope="session", autouse=True)
+def init_test():
+    AppContext().init_context()
+
+def test_pdf_parser(init_test):
+    file_path = "D:/pyproject/tender-similarity-check/document/南沙区2026-2027年市政道路绿化养护项目招标文件（2026011103）.pdf"
     pdf_parser = PdfParser()
-    filedocument = pdf_parser.parse(file_path, "2026011105")
+    file_document = pdf_parser.parse(filename=file_path, file_id="2026011103")
     print("---------------------------------------------------")
-    documents:list[HDocument] = pdf_parser.overlapping_splitting(filedocument, 7000, 70)
-    milvus_vector_db = create_tender_vector_milnus_db(1024)
+    documents:list[HDocument] = pdf_parser.overlapping_splitting(file_document, 5000, 100)
+    milvus_vector_db = create_tender_vector_milvus_db(1024)
     milvus_vector_db.insert_data(documents)
     #for document in documents:
         #print("单个page的类型：", type(document))
@@ -22,20 +28,20 @@ def test_pdf_parser():
         #collection.insert()
         #print(f"文件页数：{str(document.page)}，开始位置：{document.start_index}", f"文本内容：{document.text}")
 
-def test_query_milnvs_data():
-    milvus_vector_db = create_tender_vector_milnus_db(1024)
+def test_query_milvus_data(init_test):
+    milvus_vector_db = create_tender_vector_milvus_db(1024)
     milnvs_data_03 = milvus_vector_db.query_data("file_id == '2026011103'", ["file_id", "page", "start_index", "text_content", "vector"])
     #print(milnvs_data_03)
     for item in milnvs_data_03:
         result = milvus_vector_db.search_similar("file_id == '2026011104'", [item['vector']])
         for info in result:
-            if info["similarity"] > 0.7:
-                print(f"源文本：{item['text_content']}\n对比文本:{info}\n\n\n")
+            if info["similarity"] > 0.9:
+                print(f"源文本：{item['text_content']}\n\n对比文本:{info["text"]}\n\n\n\n")
 
 def test_text_splite():
     file_path = "D:/pyproject/tender-similarity-check/document/万达影院映前广告宣传单一来源采购文件（[230001]HLJZHY[DY]2026000120260105001）.pdf"
     pdf_parser = PdfParser()
-    pdf_test = pdf_parser.parse(file_path)
+    pdf_test = pdf_parser.parse(filename=file_path, file_id="2026011103")
     chunks = overlapping_splitting(pdf_test, 2000)   #100个字符拆分一个片段，重叠25个字符拆分
     print(f"片段数量：{chunks}")
     for chunk in chunks:
