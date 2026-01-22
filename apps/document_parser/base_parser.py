@@ -7,11 +7,13 @@ from apps.document_parser.base import HDocument, HFiledocument
 class BaseParser(ABC):
    
     @abstractmethod
-    def parse(self, file, file_id) -> HFiledocument:
+    def parse(self, filename=None, stream=None, file_id = None) -> HFiledocument:
         """
         文档解析器功能，将文件中的内容转化为可读字符串
         
-        :param file: 需要解析的文件
+        :param filename: 需要解析的文件
+        :param stream: 二进制流
+        :param file_id: 文件标识id
         :return: 返回解析的文本内容，字符串类型
         :rtype: str
         """ 

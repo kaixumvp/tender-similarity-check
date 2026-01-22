@@ -69,7 +69,7 @@ class PdfParser(BaseParser):
         :rtype: str
         """ 
         try:
-            doc:Document= fitz.open(filename=filename, stream=stream)
+            doc:Document= fitz.open(filename=filename, filetype="pdf", stream=stream)
             file_document = None
             top = None
             for page_num, page in enumerate(doc):

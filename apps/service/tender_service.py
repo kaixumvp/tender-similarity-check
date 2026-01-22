@@ -2,11 +2,13 @@ from io import BytesIO
 from itertools import combinations
 from typing import List
 
-import fitz
 from fastapi import BackgroundTasks
 
 from apps import AppContext
+from apps.document_parser.base import HDocument
+from apps.document_parser.pdf_parser import PdfParser
 from apps.repository.entity.file_entity import FileRecordEntity
+from apps.service.milnus_service import create_tender_vector_milvus_db
 
 app_context = AppContext()
 
@@ -25,12 +27,11 @@ def start_plagiarism_check(tasks, background_tasks: BackgroundTasks):
     """
     开始异步执行查重检测
     :param tasks: 检测任务
-    :param background_tasks: 后台任务对象，用于异步执行任务，fastapi自带
+    :param background_tasks: 后台任务对象，用于异步执行任务，fastApi自带
     """
     for task in tasks:
         # 遍历每个任务，并开始执行检测任务
         background_tasks.add_task(plagiarism_check_tasks(task))
-    pass
 
 
 def plagiarism_check_tasks(task):
@@ -39,15 +40,14 @@ def plagiarism_check_tasks(task):
     :param task: 任务数据，并非任务本身，实体数据
     """
     file_record_a, file_record_b = task
-    minio_client = app_context.minio_client
-    # 查询文件内容
+    CheckTask(file_record_a, file_record_b).execute()
 
 
 def bid_plagiarism_check(file_ids: List[str], background_tasks: BackgroundTasks):
     """
     标书查重
     :param file_ids: 标书文件集合，标书id
-    :param background_tasks: 后台任务对象，用于异步执行任务，fastapi自带
+    :param background_tasks: 后台任务对象，用于异步执行任务，fastApi自带
     :return:
     """
     # 创建标书任务
@@ -56,6 +56,9 @@ def bid_plagiarism_check(file_ids: List[str], background_tasks: BackgroundTasks)
     start_plagiarism_check(tasks, background_tasks)
 
 class CheckTask:
+    """
+    检查标书任务
+    """
 
     def __init__(self, file_record_a: FileRecordEntity, file_record_b: FileRecordEntity):
         self.file_record_a = file_record_a
@@ -65,20 +68,25 @@ class CheckTask:
         """
         执行比对任务
         """
-        pass
+        self._file_record_handle(self.file_record_a)
+        self._file_record_handle(self.file_record_b)
 
-    def file_record_handle(self, file_record: FileRecordEntity):
+    def _file_record_handle(self, file_record: FileRecordEntity):
+        """
+        文件处理功能
+        :param file_record: 文件管理数据表计入
+        """
         file_path = file_record.file_path
         business_id = file_record.business_id
         minio_client = app_context.minio_client
         with minio_client.get_object(business_id, file_path) as response:
             file_data = response.read()  # 自动 close + release_conn
         pdf_stream = BytesIO(file_data)
-        doc = fitz.open(stream=pdf_stream, filetype="pdf")
-        text = doc[0].get_text()
-        if text:
-            # 文本类型
-            pass
+        if file_record.mime_type == "pdf":
+            pdf_parser = PdfParser()
+            file_document = pdf_parser.parse(stream=pdf_stream, file_id=file_record.id)
+            documents: list[HDocument] = pdf_parser.overlapping_splitting(file_document, 5000, 100)
+            milvus_vector_db = create_tender_vector_milvus_db(1024)
+            milvus_vector_db.insert_data(documents)
         else:
-            # 扫描件
             pass

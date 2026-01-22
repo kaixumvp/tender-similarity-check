@@ -5,10 +5,10 @@ from fastapi import APIRouter, UploadFile, Form
 from apps.service.file_service import upload_file
 from apps.web.vo.similarity_respose import BaseResponse
 
-router = APIRouter(prefix="/api/file", tags=["文件"])
+file_router = APIRouter(prefix="/api/file", tags=["文件"])
 
 
-@router.post("/upload-multiple", response_model=BaseResponse)
+@file_router.post("/upload-multiple", response_model=BaseResponse)
 def tender_file_upload(
         files: List[UploadFile],
         business_id: str = Form(...)

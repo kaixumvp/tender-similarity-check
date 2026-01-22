@@ -17,9 +17,9 @@ class AppContext:
     @staticmethod
     def start(app):
         app_context = AppContext(app).init_context()
-        from apps.web.api import file_api
-        app_context.app.include_router(file_api.router)
-
+        from apps.web.api import file_api, tender_api
+        app_context.app.include_router(file_api.file_router)
+        app_context.app.include_router(tender_api.tender_router)
 
     def init_context(self):
         from config import data_config, milvus_config, minio_config, mysql_config
