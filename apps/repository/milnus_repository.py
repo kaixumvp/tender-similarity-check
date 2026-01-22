@@ -1,19 +1,15 @@
-from typing import List
 from pymilvus import (
-    connections,
     Collection,
     CollectionSchema,
-    FieldSchema,
-    DataType,
-    utility
+    utility, MilvusException
 )
 from sentence_transformers import SentenceTransformer
 
-from apps.algorithms.embedding import OllamaQwenEmbeddingVectorizer, QwenEmbeddingVectorizer
+from apps.algorithms.embedding import OllamaQwenEmbeddingVectorizer
 from apps.document_parser.base import HDocument
 
 # ------------------- 1. 初始化配置 -------------------
-TOP_K = 3  # 查询返回Top3相似结果
+TOP_K = 10  # 查询返回Top3相似结果
 
 # ------------------- 2. 工具函数：文本转向量 -------------------
 def text_to_vector(texts):
@@ -26,7 +22,6 @@ def text_to_vector(texts):
 class MilvusVectorDB:
     def __init__(self, fields, collection_name, index_field_name, index_params):
         # 连接Milvus服务
-
         self.fields = fields
         self.collection_name = collection_name
         self.index_field_name = index_field_name
@@ -40,10 +35,18 @@ class MilvusVectorDB:
                 self.collection = Collection(name=self.collection_name)
         else:
             self.collection = self._create_collection()
-        if not self.collection.has_index(self.index_field_name):
+        if not self._has_index_safe(self.index_field_name):
             # 创建索引
             self._create_index(self.index_field_name, self.index_params)
         return self.collection
+
+    def _has_index_safe(self, index_name: str) -> bool:
+        try:
+            # describe_index 会返回索引信息列表，若无则抛异常
+            indexes = self.collection.indexes
+            return any(idx.index_name == index_name for idx in indexes)
+        except MilvusException:
+            return False
 
     def _create_collection(self):
         """创建Milvus集合（表）"""

@@ -1,6 +1,8 @@
+from io import BytesIO
 from itertools import combinations
 from typing import List
 
+import fitz
 from fastapi import BackgroundTasks
 
 from apps import AppContext
@@ -52,3 +54,31 @@ def bid_plagiarism_check(file_ids: List[str], background_tasks: BackgroundTasks)
     tasks: List = create_plagiarism_check_tasks(file_ids)
     # 异步启动标书查重
     start_plagiarism_check(tasks, background_tasks)
+
+class CheckTask:
+
+    def __init__(self, file_record_a: FileRecordEntity, file_record_b: FileRecordEntity):
+        self.file_record_a = file_record_a
+        self.file_record_b = file_record_b
+
+    def execute(self):
+        """
+        执行比对任务
+        """
+        pass
+
+    def file_record_handle(self, file_record: FileRecordEntity):
+        file_path = file_record.file_path
+        business_id = file_record.business_id
+        minio_client = app_context.minio_client
+        with minio_client.get_object(business_id, file_path) as response:
+            file_data = response.read()  # 自动 close + release_conn
+        pdf_stream = BytesIO(file_data)
+        doc = fitz.open(stream=pdf_stream, filetype="pdf")
+        text = doc[0].get_text()
+        if text:
+            # 文本类型
+            pass
+        else:
+            # 扫描件
+            pass

@@ -23,11 +23,12 @@ class AppContext:
 
     def init_context(self):
         from config import data_config, milvus_config, minio_config, mysql_config
-        self.app.state.app_context = self
-        self.app.state.app_config = data_config
-        self.app.state.milvus_config = milvus_config
-        self.app.state.minio_config = minio_config
-        self.app.state.mysql_config = mysql_config
+        if self.app:
+            self.app.state.app_context = self
+            self.app.state.app_config = data_config
+            self.app.state.milvus_config = milvus_config
+            self.app.state.minio_config = minio_config
+            self.app.state.mysql_config = mysql_config
         self.app_config = data_config
         self.milvus_config = milvus_config
         self.minio_config = minio_config
@@ -41,7 +42,7 @@ class AppContext:
         """
         初始化mysql数据库连接
         """
-        mysql_conf = self.app.state.mysql_config
+        mysql_conf = self.mysql_config
         # 创建引擎
         engine = create_engine(
             mysql_conf["database_url"],
@@ -52,8 +53,10 @@ class AppContext:
         self.engine = engine
         # 创建会话工厂
         db_session_factory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        self.app.state.db_engine = engine
-        self.app.state.db_session_factory = db_session_factory
+        if self.app:
+            self.app.state.db_engine = engine
+            self.app.state.db_session_factory = db_session_factory
+        self.db_engine = engine
         self.db_session_factory = db_session_factory
         # 自动建表（仅开发环境建议使用！）
         # 基类
@@ -69,7 +72,8 @@ class AppContext:
             host=host,
             port=port
         )
-        self.app.state.milvus_connections = connections
+        if self.app:
+            self.app.state.milvus_connections = connections
         self.milvus_connections = connections
 
 
@@ -83,7 +87,8 @@ class AppContext:
             secret_key=self.minio_config["secret_key"],
             secure=False
         )
-        self.app.state.minio_client = minio_client
+        if self.app:
+            self.app.state.minio_client = minio_client
         self.minio_client = minio_client
         try:
             if not minio_client.bucket_exists(self.minio_config["bucket_name"]):
