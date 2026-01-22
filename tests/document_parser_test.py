@@ -6,11 +6,11 @@ from apps.splitting import overlapping_splitting
 
 
 def test_pdf_parser():
-    file_path = "D:/pyproject/tender-similarity-check/document/万达影院映前广告宣传单一来源采购文件（[230001]HLJZHY[DY]2026000120260105001）.pdf"
+    file_path = "D:/pyproject/tender-similarity-check/document/虚拟仿真实验教学平台招标文件（[230001]ZJXG[GK]2026000120260109001）.pdf"
     pdf_parser = PdfParser()
-    filedocument = pdf_parser.parse(file_path, "2026011104")
+    filedocument = pdf_parser.parse(file_path, "2026011105")
     print("---------------------------------------------------")
-    documents:list[HDocument] = pdf_parser.overlapping_splitting(filedocument, 5000, 100)
+    documents:list[HDocument] = pdf_parser.overlapping_splitting(filedocument, 7000, 70)
     milvus_vector_db = create_tender_vector_milnus_db(1024)
     milvus_vector_db.insert_data(documents)
     #for document in documents:
@@ -29,8 +29,8 @@ def test_query_milnvs_data():
     for item in milnvs_data_03:
         result = milvus_vector_db.search_similar("file_id == '2026011104'", [item['vector']])
         for info in result:
-            if info["similarity"] > 0.9:
-                print(f"源文本：{item['text_content']}，对比文本:{info}")
+            if info["similarity"] > 0.7:
+                print(f"源文本：{item['text_content']}\n对比文本:{info}\n\n\n")
 
 def test_text_splite():
     file_path = "D:/pyproject/tender-similarity-check/document/万达影院映前广告宣传单一来源采购文件（[230001]HLJZHY[DY]2026000120260105001）.pdf"
