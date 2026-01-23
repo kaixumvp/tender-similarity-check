@@ -2,7 +2,8 @@
 标书查重vo, 用于前端显示结果
 """
 from typing import Any, Optional
-from openai import BaseModel
+
+from pydantic import BaseModel
 
 
 class BaseResponse(BaseModel):  # 修正拼写：Response

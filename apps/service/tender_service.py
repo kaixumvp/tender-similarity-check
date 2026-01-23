@@ -8,18 +8,22 @@ from apps import AppContext
 from apps.document_parser.base import HDocument
 from apps.document_parser.pdf_parser import PdfParser
 from apps.repository.entity.file_entity import FileRecordEntity
+from apps.repository.entity.tender_entity import BidPlagiarismCheckTask
 from apps.service.milnus_service import create_tender_vector_milvus_db
+from apps.web.dto.tender_task import TenderTaskDto
 
 app_context = AppContext()
 
-def create_plagiarism_check_tasks(file_ids) -> List:
+def create_plagiarism_check_tasks(tender_task_dto: TenderTaskDto) -> List:
     """
     创建标书查重任务
     :param file_ids: 标书文件集合，标书文件id
     """
+
     # 根据文件id获取文件管理表中获取对象的信息数据，如文件的类型，文件路径file_path
     with app_context.db_session_factory() as session:
-         file_record_list = session.query(FileRecordEntity).filter_by(FileRecordEntity.id.in_(file_ids)).all()
+        session.add(BidPlagiarismCheckTask())
+        file_record_list = session.query(FileRecordEntity).filter_by(FileRecordEntity.id.in_(tender_task_dto.file_ids)).all()
     return list(combinations(file_record_list, 2))
 
 
@@ -43,15 +47,16 @@ def plagiarism_check_tasks(task):
     CheckTask(file_record_a, file_record_b).execute()
 
 
-def bid_plagiarism_check(file_ids: List[str], background_tasks: BackgroundTasks):
+def bid_plagiarism_check(tender_task_dto: TenderTaskDto, background_tasks: BackgroundTasks):
     """
     标书查重
     :param file_ids: 标书文件集合，标书id
+    :param task_name: 任务名称
     :param background_tasks: 后台任务对象，用于异步执行任务，fastApi自带
     :return:
     """
     # 创建标书任务
-    tasks: List = create_plagiarism_check_tasks(file_ids)
+    tasks: List = create_plagiarism_check_tasks(tender_task_dto)
     # 异步启动标书查重
     start_plagiarism_check(tasks, background_tasks)
 

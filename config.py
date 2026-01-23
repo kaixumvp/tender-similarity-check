@@ -1,6 +1,7 @@
 import yaml
 import os
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Union
+
 
 class YamlHandler:
     """YAML文件解析工具类"""
@@ -12,7 +13,7 @@ class YamlHandler:
         # 指定YAML加载器（避免安全警告）
         self.loader = yaml.SafeLoader
 
-    def read_yaml(self, file_path: str) -> Optional[Dict | List]:
+    def read_yaml(self, file_path: str) -> Optional[Union[Dict,List]]:
         """
         读取YAML文件
         :param file_path: YAML文件路径
@@ -38,7 +39,7 @@ class YamlHandler:
 
     def write_yaml(
         self,
-        data: Dict | List,
+        data: Union[Dict,List],
         file_path: str,
         sort_keys: bool = False,  # 是否按字母排序key（默认不排序，保留原顺序）
         indent: int = 4           # 缩进空格数（美化格式）
@@ -102,6 +103,7 @@ def validate_vector_config(config: Dict) -> bool:
 
 yaml_handler = YamlHandler(encoding="utf-8")
 data_config = yaml_handler.read_yaml("application.yml")
+print(data_config)
 milvus_config = data_config["milvus"]
 minio_config = data_config["minio"]
 mysql_config = data_config["mysql"]

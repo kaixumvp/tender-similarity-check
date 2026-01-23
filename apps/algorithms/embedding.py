@@ -109,7 +109,7 @@ class QwenEmbeddingVectorizer(BaseVectorizer):
     def get_vector_dim(self) -> int:
         return 4096  # 通义千问向量维度
 
-    def encode(self, texts: Union[str, List[str]]) -> list[float]:
+    def encode(self, texts: Union[str, List[str]]) -> List[float]:
         # 调用通义千问API生成向量...
         """
         获取文本的向量表示。使用 Qwen3-Embedding。
@@ -136,7 +136,7 @@ class OllamaQwenEmbeddingVectorizer(BaseVectorizer):
     def encode(
         self,
         texts: Union[str, List[str]]
-    ) -> list[float]:
+    ) -> List[float]:
         """
         生成文本向量
         :param texts: 单个文本/文本列表

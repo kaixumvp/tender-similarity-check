@@ -1,9 +1,10 @@
+from typing import List
+
 from pymilvus import (
     Collection,
     CollectionSchema,
     utility, MilvusException
 )
-from sentence_transformers import SentenceTransformer
 
 from apps.algorithms.embedding import OllamaQwenEmbeddingVectorizer
 from apps.document_parser.base import HDocument
@@ -11,12 +12,6 @@ from apps.document_parser.base import HDocument
 # ------------------- 1. 初始化配置 -------------------
 TOP_K = 10  # 查询返回Top3相似结果
 
-# ------------------- 2. 工具函数：文本转向量 -------------------
-def text_to_vector(texts):
-    """将文本列表转为向量列表"""
-    model = SentenceTransformer('all-MiniLM-L6-v2')  # 轻量级文本向量模型
-    vectors = model.encode(texts, convert_to_numpy=True).tolist()
-    return vectors
 
 # ------------------- 3. Milvus 核心操作 -------------------
 class MilvusVectorDB:
@@ -68,7 +63,7 @@ class MilvusVectorDB:
         """
         self.get_collection().create_index(field_name=field_name, index_params=index_params)
 
-    def insert_data(self, documents: list[HDocument]):
+    def insert_data(self, documents: List[HDocument]):
         """插入文本数据（存储）"""
         # 文本转向量
         #vectorizer = QwenEmbeddingVectorizer()
@@ -99,7 +94,7 @@ class MilvusVectorDB:
         self.collection.load()
         return insert_result
     
-    def query_data(self, expr:str, output_fields:list[str] = None):
+    def query_data(self, expr:str, output_fields:List[str] = None):
         self.collection.load()
         return self.collection.query(expr=expr, output_fields=output_fields)
 

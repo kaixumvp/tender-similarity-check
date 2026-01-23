@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import re
+from typing import List
 
 from apps.document_parser.base import HDocument, HFiledocument
 
@@ -29,7 +30,7 @@ class BaseParser(ABC):
         """
         return text.strip().replace("\n", " ").replace("\r", "")
     
-    def topic_splitting(text: str) -> list[str]:
+    def topic_splitting(text: str):
         """
         主题切分，将文档按照主题章节进行切分
         
@@ -59,27 +60,27 @@ class BaseParser(ABC):
         return text
 
     
-    def langchain_text_splitting(file_path: str, chunk_size: int = 2000, overlap: int = 100) -> list[str]:
-        from langchain_text_splitters import RecursiveCharacterTextSplitter
-        from langchain_community.document_loaders import PyPDFLoader
-
-        # Use the PyPDFLoader to load and parse the PDF
-        loader = PyPDFLoader(file_path)
-        pages = loader.load_and_split()
-        print(f'Loaded {len(pages)} pages from the PDF')
-
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size = 2000,
-            chunk_overlap  = 100,
-            length_function = len,
-            add_start_index = True,
-        )
-
-        documents = text_splitter.split_documents(pages)
-        return [document.page_content for document in documents]
+    # def langchain_text_splitting(file_path: str, chunk_size: int = 2000, overlap: int = 100) -> list[str]:
+    #     from langchain_text_splitters import RecursiveCharacterTextSplitter
+    #     from langchain_community.document_loaders import PyPDFLoader
+    #
+    #     # Use the PyPDFLoader to load and parse the PDF
+    #     loader = PyPDFLoader(file_path)
+    #     pages = loader.load_and_split()
+    #     print(f'Loaded {len(pages)} pages from the PDF')
+    #
+    #     text_splitter = RecursiveCharacterTextSplitter(
+    #         chunk_size = 2000,
+    #         chunk_overlap  = 100,
+    #         length_function = len,
+    #         add_start_index = True,
+    #     )
+    #
+    #     documents = text_splitter.split_documents(pages)
+    #     return [document.page_content for document in documents]
 
     
-    def overlapping_splitting(self, filedocument: HFiledocument, chunk_size: int = 2000, overlap: int = 100) -> list[HDocument]:
+    def overlapping_splitting(self, filedocument: HFiledocument, chunk_size: int = 2000, overlap: int = 100) -> List[HDocument]:
         """
         重叠切片逻辑，将长文本内容切割成不同的小段，选择重叠切片，真强语义的连贯性
         

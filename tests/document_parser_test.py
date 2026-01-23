@@ -36,7 +36,7 @@ def test_query_milvus_data(init_test):
         result = milvus_vector_db.search_similar("file_id == '2026011104'", [item['vector']])
         for info in result:
             if info["similarity"] > 0.9:
-                print(f"源文本：{item['text_content']}\n\n对比文本:{info["text"]}\n\n\n\n")
+                print(f"源文本：{item['text_content']}\n\n对比文本:{info['text']}\n\n\n\n")
 
 def test_text_splite():
     file_path = "D:/pyproject/tender-similarity-check/document/万达影院映前广告宣传单一来源采购文件（[230001]HLJZHY[DY]2026000120260105001）.pdf"
