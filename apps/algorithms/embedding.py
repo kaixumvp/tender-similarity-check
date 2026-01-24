@@ -36,6 +36,10 @@ class BaseVectorizer(metaclass=abc.ABCMeta):
     
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
+class Wold2VecVectorizer(BaseVectorizer):
+    pass
+
+
 class Doc2VecVectorizer(BaseVectorizer):
     """Doc2Vec向量生成器"""
     def __init__(self, model_path: Optional[str] = None, 
@@ -113,6 +117,8 @@ class QwenEmbeddingVectorizer(BaseVectorizer):
         # 调用通义千问API生成向量...
         """
         获取文本的向量表示。使用 Qwen3-Embedding。
+        :param texts: 文本内容
+        :return: 文本向量
         """
         from openai import OpenAI
 

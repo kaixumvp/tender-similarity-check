@@ -94,4 +94,5 @@ class CheckTask:
             milvus_vector_db = create_tender_vector_milvus_db(1024)
             milvus_vector_db.insert_data(documents)
         else:
+            # 扫描件处理
             pass
