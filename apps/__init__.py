@@ -62,6 +62,7 @@ class AppContext:
         # 基类
         from apps.repository.entity import Base
         from apps.repository.entity.file_entity import FileRecordEntity
+        from apps.repository.entity.tender_entity import BidPlagiarismCheckTask, SubBidPlagiarismCheckTask, DocumentSimilarityRecord
         Base.metadata.create_all(bind=engine)
 
     def _init_milvus(self):
