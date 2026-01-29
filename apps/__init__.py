@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI
 from minio import Minio, S3Error
-from openai import AsyncOpenAI
+#from openai import AsyncOpenAI
 from pymilvus import connections
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -74,10 +74,12 @@ class AppContext:
     def _init_milvus(self):
         host = self.milvus_config["host"]
         port = self.milvus_config["port"]
+        db_name = self.milvus_config["db_name"]
         connections.connect(
             alias="default",
             host=host,
-            port=port
+            port=port,
+            db_name=db_name,
         )
         if self.app:
             self.app.state.milvus_connections = connections
@@ -104,16 +106,16 @@ class AppContext:
             if "BucketAlreadyOwnedByYou" not in str(e):
                 raise
 
-    def _init_models(self):
-        model_config = self.app_config["model"]
-        models_dict = {}
-        if self.app_config["model"]:
-            for key, value in model_config.items():
-                client = AsyncOpenAI(
-                    base_url=value["hostname"],  # 指向 vLLM 启动的 OpenAI 兼容服务
-                    api_key=value["api_key"]  # 本地部署可忽略，填任意值即可
-                )
-                models_dict[key] = client
-        self.models = models_dict
+    # def _init_models(self):
+    #     model_config = self.app_config["model"]
+    #     models_dict = {}
+    #     if self.app_config["model"]:
+    #         for key, value in model_config.items():
+    #             client = AsyncOpenAI(
+    #                 base_url=value["hostname"],  # 指向 vLLM 启动的 OpenAI 兼容服务
+    #                 api_key=value["api_key"]  # 本地部署可忽略，填任意值即可
+    #             )
+    #             models_dict[key] = client
+    #     self.models = models_dict
 
 

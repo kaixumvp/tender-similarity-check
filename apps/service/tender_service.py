@@ -46,15 +46,18 @@ def create_plagiarism_check_tasks(tender_task_dto: TenderTaskDto) -> List:
             )
             sub_task_array.append(sub_task)
         session.add_all(sub_task_array)
-    task_array = []
-    for sub_task in sub_task_array:
-        task_dict = {
-            "id": sub_task.id,
-            "bid_plagiarism_check_task_id": sub_task.bid_plagiarism_check_task_id,
-            "left_file_id": sub_task.left_file_id,
-            "right_file_id": sub_task.right_file_id,
-        }
-        task_array.append(task_dict)
+        task_array = []
+        for sub_task in sub_task_array:
+            task_dict = {
+                "id": sub_task.id,
+                "bid_plagiarism_check_task_id": sub_task.bid_plagiarism_check_task_id,
+                "left_file_id": sub_task.left_file_id,
+                "right_file_id": sub_task.right_file_id,
+            }
+            task_array.append(task_dict)
+        session.commit()
+
+
     return task_array
 
 
@@ -160,7 +163,7 @@ class CheckTask:
         if file_record.mime_type == "pdf":
             pdf_parser = PdfParser()
             file_document = pdf_parser.parse(stream=pdf_stream, file_id=file_record.id)
-            documents: list[HDocument] = pdf_parser.overlapping_splitting(file_document, 5000, 100)
+            documents: list[HDocument] = pdf_parser.overlapping_splitting(file_document, 50, 5)
             milvus_vector_db = create_tender_vector_milvus_db(1024)
             milvus_vector_db.insert_data(documents)
         else:

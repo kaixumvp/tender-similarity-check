@@ -22,5 +22,4 @@ async def tender_check_list():
 
 @tender_router.get("/tender_check_list_sub/[task_id]", response_model=BaseResponse)
 async def tender_check_list_sub(task_id):
-
     return BaseResponse.success(data = service_tender_check_list(task_id))

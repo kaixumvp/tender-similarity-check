@@ -31,12 +31,18 @@ def test_pdf_parser():
 
 def test_query_milvus_data(init_test):
     milvus_vector_db = create_tender_vector_milvus_db(1024)
-    milnvs_data_03 = milvus_vector_db.query_data("file_id == 3", ["file_id", "page", "start_index", "text_content", "vector"])
+    milnvs_data_03 = milvus_vector_db.query_data("file_id == 1", ["file_id", "page", "start_index", "text_content", "vector"])
     #print(milnvs_data_03)
     for item in milnvs_data_03:
-        result = milvus_vector_db.search_similar("file_id == 4", [item['vector']])
+        result = milvus_vector_db.search_similar("file_id == 2", [item['vector']])
         for info in result:
-            if info["similarity"] > 0.7:
+            # data = query_vector,  # 查询向量
+            # expr = expr,
+            # anns_field = "vector",  # 向量字段名
+            # param = search_params,
+            # limit = TOP_K,  # 返回TopK
+            # output_fields = ["text_content"]  # 返回的
+            if info["similarity"] > 0.8:
                 print(f"源文本：{item['text_content']}\n\n对比文本:{info['text']}\n\n\n\n")
 
 def test_text_splite():

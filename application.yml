@@ -3,6 +3,7 @@ milvus:
   port: 19530
   collection_name: tender_vector_collection
   vector_dim:
+  db_name: tender_check
   top_k: 10
 
 minio:
