@@ -15,7 +15,7 @@ def create_tender_vector_milvus_db(vector_dim) -> MilvusVectorDB:
         ),
         FieldSchema(
             name="file_id",
-            dtype=DataType.VARCHAR,
+            dtype=DataType.INT64,
             max_length=50
         ),
         FieldSchema(

@@ -1,5 +1,7 @@
+import logging
 from fastapi import FastAPI
 from minio import Minio, S3Error
+from openai import AsyncOpenAI
 from pymilvus import connections
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -7,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 class AppContext:
 
     _instance = None  # ← 类变量，存储唯一实例
+
 
     def __new__(cls, app: FastAPI = None):
         if cls._instance is None:
@@ -23,6 +26,8 @@ class AppContext:
 
     def init_context(self):
         from config import data_config, milvus_config, minio_config, mysql_config
+        logger = logging.getLogger("uvicorn")
+        self.logger = logger
         if self.app:
             self.app.state.app_context = self
             self.app.state.app_config = data_config
@@ -36,6 +41,7 @@ class AppContext:
         self._init_mysql()
         self._init_milvus()
         self._init_minio()
+        #self._init_models()
         return self
 
     def _init_mysql(self):
@@ -97,3 +103,17 @@ class AppContext:
         except S3Error as e:
             if "BucketAlreadyOwnedByYou" not in str(e):
                 raise
+
+    def _init_models(self):
+        model_config = self.app_config["model"]
+        models_dict = {}
+        if self.app_config["model"]:
+            for key, value in model_config.items():
+                client = AsyncOpenAI(
+                    base_url=value["hostname"],  # 指向 vLLM 启动的 OpenAI 兼容服务
+                    api_key=value["api_key"]  # 本地部署可忽略，填任意值即可
+                )
+                models_dict[key] = client
+        self.models = models_dict
+
+

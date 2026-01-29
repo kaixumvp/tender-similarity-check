@@ -7,7 +7,7 @@ milvus:
 
 minio:
   # .env
-  host: localhost:9000
+  host: 127.0.0.1:9000
   access_key: minioadmin
   secret_key: minioadmin
   bucket_name: tender
@@ -15,3 +15,14 @@ minio:
 mysql:
   database_url: mysql+pymysql://root:123456@127.0.0.1:3306/tender_check?charset=utf8mb4
   pool_recycle: 300
+
+model:
+  embedding:
+    name: qwen3-Embedding:0.6b
+    host: http://127.0.0.1:11434/api/embeddings
+    api_key:
+
+  minerU2:
+    name: OpenDataLab/MinerU2.5-2509-1.2B
+    host: https://ms-ens-27d9631a-6fa5.api-inference.modelscope.cn/v1
+    api_key: ms-9c27e58a-3c49-426a-9d39-2631c44c0073

@@ -6,9 +6,9 @@ from pymilvus import (
     utility, MilvusException
 )
 
+from apps import AppContext
 from apps.algorithms.embedding import OllamaQwenEmbeddingVectorizer
 from apps.document_parser.base import HDocument
-
 # ------------------- 1. 初始化配置 -------------------
 TOP_K = 10  # 查询返回Top3相似结果
 
@@ -61,7 +61,7 @@ class MilvusVectorDB:
             "params": {"nlist": 128}   # 索引参数，nlist越大查询越准但速度越慢
         }
         """
-        self.get_collection().create_index(field_name=field_name, index_params=index_params)
+        self.collection.create_index(field_name=field_name, index_params=index_params)
 
     def insert_data(self, documents: List[HDocument]):
         """插入文本数据（存储）"""
@@ -77,6 +77,7 @@ class MilvusVectorDB:
         texts = []
         for document in documents:
             if document.text.strip():
+                #logger.info(f"文件页数：{str(document.page)}，开始位置：{document.start_index}", f"文本内容：{document.text}")
                 print(f"文件页数：{str(document.page)}，开始位置：{document.start_index}", f"文本内容：{document.text}")
                 vectors = vectorizer.encode(document.text)
                 print(f"向量数据: {vectors}")

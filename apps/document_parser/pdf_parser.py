@@ -1,3 +1,4 @@
+import base64
 import re
 
 import fitz
@@ -56,6 +57,14 @@ class PdfParser(BaseParser):
         has_keyword = any(keyword in text_stripped for keyword in self.header_footer_keywords)
         
         return has_page_num or has_keyword
+
+    async def _pdf_orc_parse(self, image: str):
+        """
+        将orc图片解析成文本， image时图片的base64_str
+        """
+
+        return ""
+
     
 
     def parse(self, filename=None, stream=None, file_id = None) -> HFiledocument:
@@ -99,7 +108,20 @@ class PdfParser(BaseParser):
                         top = file_document
                 else:
                     # 扫描件处理
-                    pass
+                    image_ids = page.get_images()
+                    for image_id in image_ids:
+                        img_data = doc.extract_image(image_id)
+                        base64_str = base64.b64encode(img_data["image"]).decode("utf-8")
+                        text = self._pdf_orc_parse(base64_str)
+                        if file_document:
+                            current = HFiledocument(file_id, page_num, text)
+                            current_parent = file_document
+                            current_parent.next = current
+                            file_document = current
+                        else:
+                            file_document = HFiledocument(file_id, page_num, text)
+                            top = file_document
+
                 #full_clean_text += page_clean_text + "\n\n"
 
             # 最终清理：移除多余空行，返回纯文本

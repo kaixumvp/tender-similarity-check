@@ -4,7 +4,7 @@ from typing import List
 
 def overlapping_splitting(text: str, chunk_size: int = 800, overlap: int = 100) -> List[str]:
     chunks = []
-    sentences = re.split(r'([。！？\!?])', text)
+    sentences = re.split(r'([。！？，. , ?])', text)
     # 将句号等标点符号重新附着到前面的句子上
     sentences = [sentences[i] + (sentences[i+1] if i+1 < len(sentences) else '') for i in range(0, len(sentences), 2)]
 
